@@ -22,13 +22,14 @@ use graphql_ir::VariableDefinition;
 use graphql_ir::VariableName;
 use indexmap::map::Entry;
 use indexmap::IndexMap;
+use relay_config::ProjectConfig;
 use schema::Schema;
 
 use crate::relay_directive::RelayDirective;
 
 /// Transform to inline fragment spreads with @relay(mask:false)
-pub fn mask(program: &Program) -> Program {
-    let mut transform = Mask::new(program);
+pub fn mask(program: &Program, project_config: &ProjectConfig) -> Program {
+    let mut transform = Mask::new(program, project_config);
     transform
         .transform_program(program)
         .replace_or_else(|| program.clone())
@@ -38,13 +39,15 @@ type JoinedArguments<'s> = IndexMap<VariableName, &'s VariableDefinition>;
 
 struct Mask<'s> {
     program: &'s Program,
+    project_config: &'s ProjectConfig,
     current_reachable_arguments: Vec<&'s VariableDefinition>,
 }
 
 impl<'s> Mask<'s> {
-    fn new(program: &'s Program) -> Self {
+    fn new(program: &'s Program, project_config: &'s ProjectConfig) -> Self {
         Self {
             program,
+            project_config,
             current_reachable_arguments: vec![],
         }
     }
@@ -120,7 +123,9 @@ impl<'s> Transformer for Mask<'s> {
     }
 
     fn transform_fragment_spread(&mut self, spread: &FragmentSpread) -> Transformed<Selection> {
-        if RelayDirective::is_unmasked_fragment_spread(spread) {
+        if RelayDirective::is_unmasked_fragment_spread(spread)
+            || self.project_config.feature_flags.disable_data_masking
+        {
             let fragment = self.program.fragment(spread.fragment.item).unwrap();
             self.current_reachable_arguments
                 .extend(&fragment.used_global_variables);

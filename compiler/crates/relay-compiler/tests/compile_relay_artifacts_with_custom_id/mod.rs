@@ -101,6 +101,7 @@ pub async fn transform_fixture(fixture: &Fixture<'_>) -> Result<String, String> 
         relay_resolvers_allow_legacy_verbose_syntax: FeatureFlag::Disabled,
         enable_relay_resolver_mutations: false,
         enable_strict_custom_scalars: false,
+        disable_data_masking: false,
     };
 
     let default_schema_config = SchemaConfig::default();

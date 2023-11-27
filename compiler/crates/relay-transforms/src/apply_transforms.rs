@@ -162,7 +162,7 @@ fn apply_common_transforms(
             &project_config.schema_config.defer_stream_interface,
         )
     });
-    program = log_event.time("mask", || mask(&program));
+    program = log_event.time("mask", || mask(&program, &project_config));
     program = log_event.time("transform_defer_stream", || {
         transform_defer_stream(
             &program,
@@ -653,7 +653,7 @@ fn apply_typegen_transforms(
         )
     })?;
 
-    program = log_event.time("mask", || mask(&program));
+    program = log_event.time("mask", || mask(&program, &project_config));
     program = log_event.time("transform_match", || {
         transform_match(
             &program,

@@ -380,7 +380,12 @@ pub(crate) fn write_fragment_type_exports_section(
         ref_type = AST::ReadOnlyArray(Box::new(ref_type));
     }
 
-    let mask_status = if RelayDirective::is_unmasked_fragment_definition(fragment_definition) {
+    let mask_status = if RelayDirective::is_unmasked_fragment_definition(fragment_definition)
+        || typegen_context
+            .project_config
+            .feature_flags
+            .disable_data_masking
+    {
         MaskStatus::Unmasked
     } else {
         MaskStatus::Masked

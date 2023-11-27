@@ -84,6 +84,9 @@ pub struct FeatureFlags {
     /// Perform strict validations when custom scalar types are used
     #[serde(default)]
     pub enable_strict_custom_scalars: bool,
+
+    #[serde(default)]
+    pub disable_data_masking: bool,
 }
 
 #[derive(Debug, Deserialize, Clone, Serialize)]

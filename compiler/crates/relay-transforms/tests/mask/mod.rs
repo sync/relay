@@ -14,16 +14,21 @@ use graphql_ir::Program;
 use graphql_syntax::parse_executable;
 use graphql_text_printer::print_fragment;
 use graphql_text_printer::PrinterOptions;
+use relay_config::ProjectConfig;
 use relay_test_schema::get_test_schema;
 use relay_transforms::mask;
 
 pub async fn transform_fixture(fixture: &Fixture<'_>) -> Result<String, String> {
+    let project_config = ProjectConfig {
+        ..Default::default()
+    };
+
     let source_location = SourceLocationKey::standalone(fixture.file_name);
     let schema = get_test_schema();
     let ast = parse_executable(fixture.content, source_location).unwrap();
     let ir = build(&schema, &ast.definitions).unwrap();
     let program = Program::from_definitions(Arc::clone(&schema), ir);
-    let next_program = &mask(&program);
+    let next_program = &mask(&program, &project_config);
 
     assert_eq!(
         next_program.fragments().count(),
